@@ -1,0 +1,82 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+#warnings.filterwarnings('ignore')
+
+dataset=pd.read_csv("/content/drive/MyDrive/Colab Notebooks/kc_house_data.csv")
+dataset.head()
+
+dataset.describe()
+
+dataset.info()
+
+"""Mean Price Prediction just for simplicity ,i have calculated it,it doesn't depend on any factors just predicts the mean which will be same for every house-Simple Predictive Model"""
+
+dataset['Mean_Price']=dataset['price'].mean()
+dataset['Mean_Price'].head()
+
+
+
+"""## **EDA Exploratary Data Analysis**
+
+I need to to catogorize the continous variables and catogorical varibles
+"""
+
+dataset['price'].describe()
+
+plt.scatter(dataset['id'],dataset['price'])
+plt.xlabel('id')
+plt.ylabel('Price')
+
+"""Treating Outliers-My biggest concert part"""
+
+q1=dataset['price'].quantile(0.25)
+q3=dataset['price'].quantile(0.75)
+IQR=q3-q1
+lower_limit=q1-1.5*IQR
+upper_limit=q3+1.5*IQR
+print(lower_limit,upper_limit)
+
+lower_limit=min(dataset['price'])
+print(lower_limit)
+
+dataset['price']=np.where(dataset['price']>upper_limit,upper_limit,dataset['price'])
+
+
+
+dataset['price'].describe()
+
+"""Treating intedependent variables"""
+
+dataset['Ever_renovated']=np.where(dataset['yr_renovated']==0,'No','Yes')
+
+dataset['Ever_renovated']
+
+dataset['year_since_renovation']=np.where(dataset['Ever_renovated']=='Yes',abs(dataset['yr_built']-dataset['yr_renovated']),0)
+dataset['year_since_renovation']
+
+dataset.head()
+
+dataset.drop(columns=['yr_built','yr_renovated','Ever_renovated'],inplace=True)
+dataset.head()
+
+dataset.drop(columns=['date','id'],inplace=True)
+dataset.head()
+
+dataset.drop(columns=['Mean_Price'],inplace=True)
+
+dataset.head()
+
+dataset.to_csv('Transformed_dataset',index=False)
+
+Transformed_dataset=pd.read_csv('/content/Transformed_dataset')
+Transformed_dataset.head()
+
+condition_price=dataset.pivot_table(values='price',columns='grade')
+condition_price
+
